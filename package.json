@@ -1,5 +1,5 @@
 {
-  "name": "@napi-rs/keyring",
+  "name": "@difftim/keyring",
   "version": "2.1.2",
   "description": "https://github.com/hwchen/keyring-rs Node.js binding via https://napi.rs",
   "main": "index.js",
@@ -28,7 +28,7 @@
     },
     "./package.json": "./package.json"
   },
-  "repository": "https://github.com/Brooooooklyn/keyring-node",
+  "repository": "https://github.com/difftim/keyring-node",
   "license": "MIT",
   "keywords": [
     "napi-rs",
@@ -51,37 +51,27 @@
     "constEnum": false,
     "targets": [
       "aarch64-apple-darwin",
-      "aarch64-unknown-linux-gnu",
-      "aarch64-unknown-linux-musl",
-      "aarch64-pc-windows-msvc",
-      "x86_64-apple-darwin",
-      "x86_64-pc-windows-msvc",
-      "x86_64-unknown-linux-gnu",
-      "x86_64-unknown-linux-musl",
-      "x86_64-unknown-freebsd",
-      "i686-pc-windows-msvc",
-      "armv7-unknown-linux-gnueabihf",
-      "riscv64gc-unknown-linux-gnu"
+      "x86_64-apple-darwin"
     ]
   },
   "engines": {
     "node": ">= 10"
   },
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
+    "build:darwin": "napi build --platform --release --target aarch64-apple-darwin && napi build --platform --release --target x86_64-apple-darwin",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",
     "format:rs": "cargo fmt",
     "lint": "oxlint",
     "licenses": "node scripts/third-party-licenses.mjs",
-    "prepublishOnly": "napi prepublish -t npm",
+    "prepublishOnly": "napi prepublish -t npm --no-gh-release",
     "test": "ava -s",
     "preversion": "napi build --platform && git add .",
     "version": "napi version"

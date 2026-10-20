@@ -74,8 +74,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-android-arm64')
-        const bindingPackageVersion = require('@napi-rs/keyring-android-arm64/package.json').version
+        const binding = require('@difftim/keyring-android-arm64')
+        const bindingPackageVersion = require('@difftim/keyring-android-arm64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -96,8 +96,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-android-arm-eabi')
-        const bindingPackageVersion = require('@napi-rs/keyring-android-arm-eabi/package.json').version
+        const binding = require('@difftim/keyring-android-arm-eabi')
+        const bindingPackageVersion = require('@difftim/keyring-android-arm-eabi/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -126,8 +126,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-win32-x64-gnu')
-          const bindingPackageVersion = require('@napi-rs/keyring-win32-x64-gnu/package.json').version
+          const binding = require('@difftim/keyring-win32-x64-gnu')
+          const bindingPackageVersion = require('@difftim/keyring-win32-x64-gnu/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -148,8 +148,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-win32-x64-msvc')
-          const bindingPackageVersion = require('@napi-rs/keyring-win32-x64-msvc/package.json').version
+          const binding = require('@difftim/keyring-win32-x64-msvc')
+          const bindingPackageVersion = require('@difftim/keyring-win32-x64-msvc/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -171,8 +171,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-win32-ia32-msvc')
-        const bindingPackageVersion = require('@napi-rs/keyring-win32-ia32-msvc/package.json').version
+        const binding = require('@difftim/keyring-win32-ia32-msvc')
+        const bindingPackageVersion = require('@difftim/keyring-win32-ia32-msvc/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -193,8 +193,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-win32-arm64-msvc')
-        const bindingPackageVersion = require('@napi-rs/keyring-win32-arm64-msvc/package.json').version
+        const binding = require('@difftim/keyring-win32-arm64-msvc')
+        const bindingPackageVersion = require('@difftim/keyring-win32-arm64-msvc/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -218,8 +218,8 @@ function requireNative() {
       loadErrors.push(e)
     }
     try {
-      const binding = require('@napi-rs/keyring-darwin-universal')
-      const bindingPackageVersion = require('@napi-rs/keyring-darwin-universal/package.json').version
+      const binding = require('@difftim/keyring-darwin-universal')
+      const bindingPackageVersion = require('@difftim/keyring-darwin-universal/package.json').version
       if (
         bindingPackageVersion !== '2.1.2' &&
         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -240,8 +240,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-darwin-x64')
-        const bindingPackageVersion = require('@napi-rs/keyring-darwin-x64/package.json').version
+        const binding = require('@difftim/keyring-darwin-x64')
+        const bindingPackageVersion = require('@difftim/keyring-darwin-x64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -262,8 +262,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-darwin-arm64')
-        const bindingPackageVersion = require('@napi-rs/keyring-darwin-arm64/package.json').version
+        const binding = require('@difftim/keyring-darwin-arm64')
+        const bindingPackageVersion = require('@difftim/keyring-darwin-arm64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -288,8 +288,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-freebsd-x64')
-        const bindingPackageVersion = require('@napi-rs/keyring-freebsd-x64/package.json').version
+        const binding = require('@difftim/keyring-freebsd-x64')
+        const bindingPackageVersion = require('@difftim/keyring-freebsd-x64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -310,8 +310,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-freebsd-arm64')
-        const bindingPackageVersion = require('@napi-rs/keyring-freebsd-arm64/package.json').version
+        const binding = require('@difftim/keyring-freebsd-arm64')
+        const bindingPackageVersion = require('@difftim/keyring-freebsd-arm64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -337,8 +337,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-x64-musl')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-x64-musl/package.json').version
+          const binding = require('@difftim/keyring-linux-x64-musl')
+          const bindingPackageVersion = require('@difftim/keyring-linux-x64-musl/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -359,8 +359,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-x64-gnu')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-x64-gnu/package.json').version
+          const binding = require('@difftim/keyring-linux-x64-gnu')
+          const bindingPackageVersion = require('@difftim/keyring-linux-x64-gnu/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -383,8 +383,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-arm64-musl')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-arm64-musl/package.json').version
+          const binding = require('@difftim/keyring-linux-arm64-musl')
+          const bindingPackageVersion = require('@difftim/keyring-linux-arm64-musl/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -405,8 +405,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-arm64-gnu')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-arm64-gnu/package.json').version
+          const binding = require('@difftim/keyring-linux-arm64-gnu')
+          const bindingPackageVersion = require('@difftim/keyring-linux-arm64-gnu/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -429,8 +429,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-arm-musleabihf')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-arm-musleabihf/package.json').version
+          const binding = require('@difftim/keyring-linux-arm-musleabihf')
+          const bindingPackageVersion = require('@difftim/keyring-linux-arm-musleabihf/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -451,8 +451,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-arm-gnueabihf')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-arm-gnueabihf/package.json').version
+          const binding = require('@difftim/keyring-linux-arm-gnueabihf')
+          const bindingPackageVersion = require('@difftim/keyring-linux-arm-gnueabihf/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -475,8 +475,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-loong64-musl')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-loong64-musl/package.json').version
+          const binding = require('@difftim/keyring-linux-loong64-musl')
+          const bindingPackageVersion = require('@difftim/keyring-linux-loong64-musl/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -497,8 +497,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-loong64-gnu')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-loong64-gnu/package.json').version
+          const binding = require('@difftim/keyring-linux-loong64-gnu')
+          const bindingPackageVersion = require('@difftim/keyring-linux-loong64-gnu/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -521,8 +521,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-riscv64-musl')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-riscv64-musl/package.json').version
+          const binding = require('@difftim/keyring-linux-riscv64-musl')
+          const bindingPackageVersion = require('@difftim/keyring-linux-riscv64-musl/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -543,8 +543,8 @@ function requireNative() {
           loadErrors.push(e)
         }
         try {
-          const binding = require('@napi-rs/keyring-linux-riscv64-gnu')
-          const bindingPackageVersion = require('@napi-rs/keyring-linux-riscv64-gnu/package.json').version
+          const binding = require('@difftim/keyring-linux-riscv64-gnu')
+          const bindingPackageVersion = require('@difftim/keyring-linux-riscv64-gnu/package.json').version
           if (
             bindingPackageVersion !== '2.1.2' &&
             process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -566,8 +566,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-linux-ppc64-gnu')
-        const bindingPackageVersion = require('@napi-rs/keyring-linux-ppc64-gnu/package.json').version
+        const binding = require('@difftim/keyring-linux-ppc64-gnu')
+        const bindingPackageVersion = require('@difftim/keyring-linux-ppc64-gnu/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -588,8 +588,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-linux-s390x-gnu')
-        const bindingPackageVersion = require('@napi-rs/keyring-linux-s390x-gnu/package.json').version
+        const binding = require('@difftim/keyring-linux-s390x-gnu')
+        const bindingPackageVersion = require('@difftim/keyring-linux-s390x-gnu/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -614,8 +614,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-openharmony-arm64')
-        const bindingPackageVersion = require('@napi-rs/keyring-openharmony-arm64/package.json').version
+        const binding = require('@difftim/keyring-openharmony-arm64')
+        const bindingPackageVersion = require('@difftim/keyring-openharmony-arm64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -636,8 +636,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-openharmony-x64')
-        const bindingPackageVersion = require('@napi-rs/keyring-openharmony-x64/package.json').version
+        const binding = require('@difftim/keyring-openharmony-x64')
+        const bindingPackageVersion = require('@difftim/keyring-openharmony-x64/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -658,8 +658,8 @@ function requireNative() {
         loadErrors.push(e)
       }
       try {
-        const binding = require('@napi-rs/keyring-openharmony-arm')
-        const bindingPackageVersion = require('@napi-rs/keyring-openharmony-arm/package.json').version
+        const binding = require('@difftim/keyring-openharmony-arm')
+        const bindingPackageVersion = require('@difftim/keyring-openharmony-arm/package.json').version
         if (
           bindingPackageVersion !== '2.1.2' &&
           process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
@@ -791,18 +791,18 @@ if (!nativeBinding || forceWasi) {
     let candidateError = null
     let candidateFailed = false
     try {
-      candidateError = __napiWasiResolveCandidate('@napi-rs/keyring-wasm32-wasi', true, undefined)
+      candidateError = __napiWasiResolveCandidate('@difftim/keyring-wasm32-wasi', true, undefined)
       candidateFailed = candidateError !== null
       if (!candidateFailed) {
         if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== '0') {
-          const bindingPackageVersion = require('@napi-rs/keyring-wasm32-wasi/package.json').version
+          const bindingPackageVersion = require('@difftim/keyring-wasm32-wasi/package.json').version
           if (bindingPackageVersion !== '2.1.2') {
             throw new Error(
               `WASI binding package version mismatch, expected 2.1.2 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
             )
           }
         }
-        wasiBinding = require('@napi-rs/keyring-wasm32-wasi')
+        wasiBinding = require('@difftim/keyring-wasm32-wasi')
         nativeBinding = wasiBinding
         wasiBindingLoaded = true
       }
