@@ -104,6 +104,68 @@ passcode / Secure Enclave policies.
 - `findCredentials` searches the legacy keychains only; it does not see items stored in the
   data-protection keychain.
 
+# Building and publishing (GitHub Packages)
+
+This fork is published as `@difftim/keyring` to GitHub Packages, built and released locally from a
+Mac. Only macOS binaries (arm64 + x64, as separate platform packages) are shipped for now; npm picks
+the right one at install time via the `os`/`cpu` fields on the `optionalDependencies`.
+
+## One-time setup
+
+1. Install a rustup-managed toolchain with both macOS targets. Homebrew's `rust` formula only ships
+   the host's standard library and cannot cross-compile to x64:
+
+   ```sh
+   brew install rustup   # keg-only: does not shadow an existing Homebrew rust
+   export PATH="/opt/homebrew/opt/rustup/bin:$PATH"
+   rustup default stable
+   rustup target add aarch64-apple-darwin x86_64-apple-darwin
+   ```
+
+2. Create a GitHub **classic** personal access token with the `write:packages` scope and add it to
+   `~/.npmrc`:
+
+   ```
+   //npm.pkg.github.com/:_authToken=<PAT>
+   ```
+
+## Release
+
+```sh
+# 1. bump the version and commit
+npm version patch
+
+# 2. build both architectures (must use the rustup toolchain, not Homebrew rust)
+PATH="/opt/homebrew/opt/rustup/bin:$PATH" yarn build:darwin
+
+# 3. generate the per-platform package dirs and stage the binaries
+yarn napi create-npm-dirs
+cp keyring.darwin-arm64.node npm/darwin-arm64/
+cp keyring.darwin-x64.node npm/darwin-x64/
+
+# 4. publish — prepublishOnly publishes the two platform packages first,
+#    injects them as optionalDependencies, then publishes the main package
+npm publish
+```
+
+## Installing from GitHub Packages
+
+GitHub Packages requires authentication even for public packages. Consumers need an `.npmrc` with:
+
+```
+@difftim:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=<PAT with read:packages>
+```
+
+Then `npm install @difftim/keyring` works on both Apple Silicon and Intel Macs.
+
+## Adding Linux / Windows later
+
+Add the targets back to `napi.targets` in `package.json` (e.g. `x86_64-unknown-linux-gnu`,
+`x86_64-pc-windows-msvc`), build those binaries (CI or cross-compilation), stage them into
+`npm/<platform>/`, and publish a new version. `napi prepublish` refuses to publish while any
+declared target's binary is missing, so only declare targets you can actually ship.
+
 # Bundled Rust dependencies
 
 The prebuilt `.node` binaries are built with `--locked` from the committed [`Cargo.lock`](./Cargo.lock), and with
