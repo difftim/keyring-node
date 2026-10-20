@@ -73,6 +73,7 @@
     "licenses": "node scripts/third-party-licenses.mjs",
     "prepublishOnly": "napi prepublish -t npm --no-gh-release",
     "test": "ava -s",
+    "typecheck": "tsc --noEmit",
     "preversion": "napi build --platform && git add .",
     "version": "napi version"
   },
