@@ -15,7 +15,9 @@
 //!   used `{service}*` and therefore also matched unrelated services that
 //!   merely share the prefix.
 //! - Linux/FreeBSD: keytar wrote Secret Service items with the attributes
-//!   `{service, account}` (the default store uses `{service, username}`).
+//!   `{service, account}` under libsecret's generic schema (the default store
+//!   uses `{service, username}`), and matched the schema on every lookup, so
+//!   reads, deletes and enumeration here filter on `xdg:schema` too.
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
@@ -187,6 +189,12 @@ mod imp {
 
   // keytar stored items through libsecret's generic schema; replicating the
   // schema attribute keeps items written here fully readable by keytar.
+  // keytar's lookups matched on the schema too (libsecret adds `xdg:schema`
+  // to the search attributes unless SECRET_SCHEMA_DONT_MATCH_NAME is set),
+  // so every search here must carry it as well: Secret Service matching is
+  // subset-based, and without the schema a search for `{service, account}`
+  // would also hit — and deletePassword would delete — another application's
+  // items that merely reuse those two attribute names under its own schema.
   const XDG_SCHEMA: &str = "org.freedesktop.Secret.Generic";
 
   fn connect() -> Result<SecretService<'static>> {
@@ -196,7 +204,11 @@ mod imp {
   }
 
   fn keytar_attributes<'a>(service: &'a str, account: &'a str) -> HashMap<&'a str, &'a str> {
-    HashMap::from([("service", service), ("account", account)])
+    HashMap::from([
+      ("service", service),
+      ("account", account),
+      ("xdg:schema", XDG_SCHEMA),
+    ])
   }
 
   pub(super) fn get_password(service: &str, account: &str) -> Result<Option<String>> {
@@ -225,8 +237,7 @@ mod imp {
     if collection.is_locked().map_err(anyhow::Error::from)? {
       collection.unlock().map_err(anyhow::Error::from)?;
     }
-    let mut attributes = keytar_attributes(service, account);
-    attributes.insert("xdg:schema", XDG_SCHEMA);
+    let attributes = keytar_attributes(service, account);
     collection
       .create_item(
         &format!("{service}/{account}"),
@@ -265,7 +276,10 @@ mod imp {
   pub(super) fn find_credentials(service: &str) -> Result<Vec<(String, String)>> {
     let secret_service = connect()?;
     let SearchItemsResult { locked, unlocked } = secret_service
-      .search_items(HashMap::from([("service", service)]))
+      .search_items(HashMap::from([
+        ("service", service),
+        ("xdg:schema", XDG_SCHEMA),
+      ]))
       .map_err(anyhow::Error::from)?;
     let mut found = Vec::new();
     for (item, was_locked) in unlocked
