@@ -6,7 +6,11 @@
 //!
 //! - macOS: keytar wrote generic passwords keyed by service/account in the
 //!   login keychain, which is exactly what the default keychain store does,
-//!   so the regular entry path is reused.
+//!   so the regular entry path is reused. One narrow divergence: keytar
+//!   passed a NULL keychain and therefore searched the whole default keychain
+//!   search list, while this layer is pinned to the login keychain — an item
+//!   a user moved to another keychain in the search list is visible to keytar
+//!   but not here.
 //! - Windows: keytar wrote generic credentials with target name
 //!   `{service}/{account}` and a UTF-8 password blob (the default store uses
 //!   `{user}.{service}` targets and UTF-16 blobs, which is why the regular

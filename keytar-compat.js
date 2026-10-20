@@ -36,6 +36,12 @@ module.exports.deletePassword = function deletePassword(service, account) {
 
 // Deliberately not `async`: node-keytar validates arguments synchronously, so
 // a bad `service` must throw rather than return a rejected promise.
+//
+// Emulated via findCredentials rather than keytar's single service-only
+// lookup. For keytar-written credentials the result is the same (they always
+// carry an `account`), but on Linux an item under the generic libsecret
+// schema with a `service` attribute and no `account` (e.g. written by
+// secret-tool) is found by keytar's findPassword and skipped here.
 module.exports.findPassword = function findPassword(service) {
   checkString(service, 'service')
   return keytarFindCredentials(service).then((credentials) => (credentials.length ? credentials[0].password : null))

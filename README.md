@@ -47,7 +47,15 @@ Per-platform storage identity (matching keytar exactly):
   blobs (the main `Entry` API uses `{user}.{service}` targets with UTF-16 blobs, which is why
   it cannot see keytar credentials).
 - **Linux/FreeBSD**: Secret Service items with `{service, account}` attributes and the generic
-  libsecret schema (the main `Entry` API uses `{service, username}`).
+  libsecret schema (the main `Entry` API uses `{service, username}`), matched on `xdg:schema`
+  during lookups exactly as libsecret did for keytar.
+
+Three known, deliberate divergences from keytar, all strictly narrower in scope: on Windows,
+credentials are enumerated with the filter `{service}/*` where keytar's `{service}*` also matched
+unrelated services sharing the prefix; on macOS, lookups are pinned to the login keychain rather
+than the whole default keychain search list; and `findPassword` returns the first credential found
+by `findCredentials`, so a Linux item that carries no `account` attribute (never written by keytar
+itself) is not surfaced.
 
 Note that `keytar-compat` and the main `Entry`/`AsyncEntry` API only share storage on macOS;
 on Windows and Linux they address different credentials by design. The `keytar` shim shares
