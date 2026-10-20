@@ -391,17 +391,23 @@ if (platform === 'darwin') {
     t.true(await keytarCompat.deletePassword(testKeytarService, testKeytarUser), 'clean up the keytar credential')
     t.true(entry.deleteCredential(), 'clean up the entry credential')
   })
+}
 
+if (platform === 'darwin' || platform === 'linux') {
   // Secrets are arbitrary bytes, so enumerating them must not assume UTF-8.
-  test('findCredentials survives a non-UTF-8 secret on macOS', async (t) => {
+  test('findCredentials survives a non-UTF-8 secret', async (t) => {
     const binaryService = 'keyring-node-test-service-binary-find'
     const entry = new Entry(binaryService, testUser)
     entry.setSecret(new Uint8Array([0x80, 0xff, 0x41, 0x42]))
     const credentials = findCredentials(binaryService)
     t.is(credentials.length, 1)
     t.is(credentials[0].account, testUser)
-    const keytarCredentials = await keytarCompat.findCredentials(binaryService)
-    t.is(keytarCredentials.length, 1)
+    if (platform === 'darwin') {
+      // Only on macOS does the keytar layer share the entry's storage
+      // identity; on Linux it deliberately skips `username` items.
+      const keytarCredentials = await keytarCompat.findCredentials(binaryService)
+      t.is(keytarCredentials.length, 1)
+    }
     t.true(entry.deleteCredential(), 'clean up the binary credential')
   })
 }

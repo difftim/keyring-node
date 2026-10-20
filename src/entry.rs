@@ -467,10 +467,12 @@ fn find_credentials_(
     .map_err(anyhow::Error::from)?;
   for item in locked.iter().chain(unlocked.iter()) {
     let password = item.get_secret().map_err(anyhow::Error::from)?;
-    let password = unsafe { String::from_utf8_unchecked(password) };
+    // The secret may hold arbitrary bytes (e.g. written via setSecret), so a
+    // lossy conversion is required for soundness.
+    let password = String::from_utf8_lossy(&password).into_owned();
     let attrs = item.get_attributes().map_err(anyhow::Error::from)?;
     if let Some(user) = attrs.get("username") {
-      result.push((user.clone(), password.to_string()));
+      result.push((user.clone(), password));
     }
   }
   Ok(result)
