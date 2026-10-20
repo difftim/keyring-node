@@ -8,8 +8,8 @@ export declare class AsyncEntry {
    * The default credential builder is used.
    *
    * An optional [EntryOptions] bag controls platform-specific behavior; it is
-   * accepted on all platforms but currently only used on Linux, where it can
-   * pin the entry to a specific credential store.
+   * accepted on all platforms but currently only used on Linux and macOS,
+   * where it can pin the entry to a specific credential store.
    */
   constructor(service: string, username: string, options?: EntryOptions | undefined | null)
   /**
@@ -18,10 +18,15 @@ export declare class AsyncEntry {
    * The default credential builder is used.
    *
    * An optional [EntryOptions] bag controls platform-specific behavior; it is
-   * accepted on all platforms but currently only used on Linux, where it can
-   * pin the entry to a specific credential store.
+   * accepted on all platforms but currently only used on Linux and macOS,
+   * where it can pin the entry to a specific credential store.
    */
-  static withTarget(target: string, service: string, username: string, options?: EntryOptions | undefined | null): AsyncEntry
+  static withTarget(
+    target: string,
+    service: string,
+    username: string,
+    options?: EntryOptions | undefined | null,
+  ): AsyncEntry
   /**
    * Set the password for this entry.
    *
@@ -102,8 +107,8 @@ export declare class Entry {
    * The default credential builder is used.
    *
    * An optional [EntryOptions] bag controls platform-specific behavior; it is
-   * accepted on all platforms but currently only used on Linux, where it can
-   * pin the entry to a specific credential store.
+   * accepted on all platforms but currently only used on Linux and macOS,
+   * where it can pin the entry to a specific credential store.
    */
   constructor(service: string, username: string, options?: EntryOptions | undefined | null)
   /**
@@ -112,8 +117,8 @@ export declare class Entry {
    * The default credential builder is used.
    *
    * An optional [EntryOptions] bag controls platform-specific behavior; it is
-   * accepted on all platforms but currently only used on Linux, where it can
-   * pin the entry to a specific credential store.
+   * accepted on all platforms but currently only used on Linux and macOS,
+   * where it can pin the entry to a specific credential store.
    */
   static withTarget(target: string, service: string, username: string, options?: EntryOptions | undefined | null): Entry
   /**
@@ -204,13 +209,61 @@ export interface Credential {
 export interface EntryOptions {
   /** Linux-only options; ignored on other platforms. */
   linux?: LinuxEntryOptions
+  /** macOS-only options; ignored on other platforms. */
+  macos?: MacosEntryOptions
 }
 
 /** find credentials by service name */
 export declare function findCredentials(service: string, target?: string | undefined | null): Array<Credential>
 
 /** find credentials by service name */
-export declare function findCredentialsAsync(service: string, target?: string | undefined | null, signal?: AbortSignal | undefined | null): Promise<Array<Credential>>
+export declare function findCredentialsAsync(
+  service: string,
+  target?: string | undefined | null,
+  signal?: AbortSignal | undefined | null,
+): Promise<Array<Credential>>
+
+/**
+ * keytar-compatible `deletePassword`: returns `true` when a credential was
+ * deleted and `false` when there was none.
+ */
+export declare function keytarDeletePassword(
+  service: string,
+  account: string,
+  signal?: AbortSignal | undefined | null,
+): Promise<boolean>
+
+/**
+ * keytar-compatible `findCredentials`: enumerates the credentials for a
+ * service in node-keytar's native format (on Linux only keytar-format items
+ * — those carrying an `account` attribute — are returned, never items
+ * written by this library's main API).
+ */
+export declare function keytarFindCredentials(
+  service: string,
+  signal?: AbortSignal | undefined | null,
+): Promise<Array<Credential>>
+
+/**
+ * keytar-compatible `getPassword`: reads the credential exactly where and
+ * how node-keytar stored it on this platform.
+ */
+export declare function keytarGetPassword(
+  service: string,
+  account: string,
+  signal?: AbortSignal | undefined | null,
+): Promise<string | null>
+
+/**
+ * keytar-compatible `setPassword`: writes the credential in node-keytar's
+ * native on-store format so keytar itself could still read it back.
+ */
+export declare function keytarSetPassword(
+  service: string,
+  account: string,
+  password: string,
+  signal?: AbortSignal | undefined | null,
+): Promise<void>
 
 /** Linux-only entry options; ignored on other platforms. */
 export interface LinuxEntryOptions {
@@ -230,3 +283,24 @@ export interface LinuxEntryOptions {
  * unavailable on this machine throws instead of falling back.
  */
 export type LinuxStore = 'secret-service' | 'keyutils'
+
+/** macOS-only entry options; ignored on other platforms. */
+export interface MacosEntryOptions {
+  /**
+   * Require a specific macOS credential store. When absent, the default
+   * file-based keychain is used. There is no fallback between stores.
+   */
+  store?: MacosStore
+}
+
+/**
+ * A macOS credential store that entries can be pinned to.
+ *
+ * macOS only; ignored on other platforms. There is no fallback between
+ * stores. Note that a missing entitlement does not fail construction: when
+ * the process lacks the required code-signing entitlement, the `protected`
+ * store is still constructed and the error surfaces on the first operation.
+ * Construction itself can still throw, e.g. for `withTarget` (not supported
+ * with the `protected` store) or an empty service or username.
+ */
+export type MacosStore = 'keychain' | 'protected'

@@ -17,6 +17,42 @@ console.log('My password is ', password)
 entry.deletePassword()
 ```
 
+# node-keytar compatibility
+
+Two modules expose node-keytar's API (`getPassword`, `setPassword`, `deletePassword`,
+`findPassword`, `findCredentials`); they differ only in where the credentials live:
+
+| Module                           | Storage format                                        | Use when                                                                                |
+| -------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `@napi-rs/keyring/keytar`        | this library's `Entry` format (unchanged since 2.1.x) | you only want keytar's API shape, or you already store credentials through this package |
+| `@napi-rs/keyring/keytar-compat` | node-keytar's exact on-store format                   | you are migrating an app off node-keytar and its users already have stored credentials  |
+
+## `keytar-compat`: zero-migration drop-in for node-keytar
+
+`@napi-rs/keyring/keytar-compat` reads and writes credentials in keytar's exact on-store
+format on every platform, so switching an existing application requires **no data migration in
+either direction** — credentials written by keytar stay readable here, and credentials written
+here stay readable by keytar:
+
+```diff
+- const keytar = require('keytar')
++ const keytar = require('@napi-rs/keyring/keytar-compat')
+```
+
+Per-platform storage identity (matching keytar exactly):
+
+- **macOS**: generic passwords keyed by service/account in the login keychain (identical to
+  the main `Entry` API, so the two can be mixed freely there).
+- **Windows**: generic credentials with target name `{service}/{account}` and UTF-8 password
+  blobs (the main `Entry` API uses `{user}.{service}` targets with UTF-16 blobs, which is why
+  it cannot see keytar credentials).
+- **Linux/FreeBSD**: Secret Service items with `{service, account}` attributes and the generic
+  libsecret schema (the main `Entry` API uses `{service, username}`).
+
+Note that `keytar-compat` and the main `Entry`/`AsyncEntry` API only share storage on macOS;
+on Windows and Linux they address different credentials by design. The `keytar` shim shares
+storage with `Entry` on every platform.
+
 # Linux backend selection
 
 On Linux, `Entry` and `AsyncEntry` pick a credential store automatically: the
@@ -42,6 +78,31 @@ description, so distinct targets keep distinct credentials.
 > [linux-keyutils-keyring-store](https://crates.io/crates/linux-keyutils-keyring-store) docs, the key
 > management facility "is completely in-memory and will not persist across reboots". Prefer
 > `secret-service` for credentials that must survive a restart.
+
+# macOS backend selection
+
+On macOS, `Entry` and `AsyncEntry` use the legacy file-based
+[keychain](https://crates.io/crates/apple-native-keyring-store) by default. You can pin an entry to a
+specific store the same way as on Linux (the option is accepted on every platform but only meaningful
+on macOS):
+
+```js
+new Entry('my_service', 'my_name', { macos: { store: 'keychain' } }) // the file-based keychain (default)
+new Entry('my_service', 'my_name', { macos: { store: 'protected' } }) // the data-protection keychain
+```
+
+The `protected` store writes items to the data-protection keychain
+(`kSecUseDataProtectionKeychain`), the modern store whose items are protected by the device
+passcode / Secure Enclave policies.
+
+- The calling process must be code-signed with an application identifier (an app bundle with a
+  provisioning profile, or a signed binary with the right entitlements). Unsigned processes — plain
+  `node` included — get "A required entitlement isn't present" from the OS on every operation.
+- `withTarget` is not supported with the `protected` store and throws: on macOS the target selects a
+  legacy keychain file, which has no meaning in the data-protection keychain.
+- `service` and `username` must be non-empty: an empty string acts as a wildcard during lookup.
+- `findCredentials` searches the legacy keychains only; it does not see items stored in the
+  data-protection keychain.
 
 # Bundled Rust dependencies
 
