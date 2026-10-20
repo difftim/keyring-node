@@ -104,6 +104,28 @@ passcode / Secure Enclave policies.
 - `findCredentials` searches the legacy keychains only; it does not see items stored in the
   data-protection keychain.
 
+With the `protected` store you can also choose the accessibility (`kSecAttrAccessible`) of the
+credentials an entry creates. The system default, `when-unlocked`, makes an item readable only while
+the device is unlocked; `after-first-unlock` keeps it readable from the first unlock after boot
+until restart, which is the usual choice for background processes that need credentials while the
+screen is locked:
+
+```js
+new Entry('my_service', 'my_name', { macos: { store: 'protected', accessPolicy: 'after-first-unlock' } })
+```
+
+The accepted values, from least to most restrictive: `after-first-unlock`,
+`after-first-unlock-this-device-only`, `when-unlocked` (the default), `when-unlocked-this-device-only`,
+`when-passcode-set-this-device-only`, and `require-user-presence`. The first five map to the
+`kSecAttrAccessible` constants of the same name; `require-user-presence` is instead an access-control
+policy — like `when-unlocked`, but every access additionally prompts for biometry or the device
+password, so avoid it for background or headless processes where reads would block or fail. The
+`-this-device-only` variants additionally prevent the item from being migrated to another device (it
+still appears in encrypted backups, but cannot be restored onto different hardware). The policy
+applies to credentials at creation time — it does not rewrite items that already exist. The file-based
+`keychain` store has no per-item accessibility, so combining `accessPolicy` with it (explicitly or by
+leaving `store` absent) throws rather than silently ignoring the option.
+
 # Building and publishing (GitHub Packages)
 
 This fork is published as `@difftim/keyring` to GitHub Packages, built and released locally from a

@@ -12,7 +12,9 @@ use crate::options::EntryOptions;
 /// propagated, so requiring an unavailable store throws instead of falling
 /// back. Without the option, the default auto-fallback selection is used.
 /// On macOS, `options.macos.store` likewise pins the entry to the file-based
-/// keychain or to the data-protection keychain.
+/// keychain or to the data-protection keychain, and
+/// `options.macos.accessPolicy` sets the `kSecAttrAccessible` policy of
+/// credentials the entry creates (protected store only).
 /// On all other platforms the options are accepted and ignored.
 #[cfg_attr(
   not(any(target_os = "linux", target_os = "macos")),
@@ -33,11 +35,11 @@ pub(crate) fn create_entry(
   }
 
   #[cfg(target_os = "macos")]
-  if let Some(store) = options
+  if let Some(macos) = options
     .and_then(|o| o.macos.as_ref())
-    .and_then(|m| m.store.as_ref())
+    .filter(|m| m.store.is_some() || m.access_policy.is_some())
   {
-    return create_entry_with_macos_store(service, user, target, store);
+    return create_entry_with_macos_options(service, user, target, macos);
   }
 
   #[cfg(target_os = "linux")]
@@ -128,22 +130,27 @@ fn setup_linux_store() -> anyhow::Result<()> {
 /// loudly if that store cannot be constructed.
 ///
 /// `target` maps to the file-based keychain's `keychain` modifier (a legacy
-/// keychain file name). The protected store's only modifier is
-/// `access-policy`, so a `target` there is rejected rather than silently
-/// ignored.
+/// keychain file name). The protected store's modifiers are `access-policy`
+/// (from `options.macos.accessPolicy`) and nothing else, so a `target` there
+/// is rejected rather than silently ignored. The file-based keychain has no
+/// per-item accessibility, so an access policy outside the protected store is
+/// likewise rejected.
 #[cfg(target_os = "macos")]
-fn create_entry_with_macos_store(
+fn create_entry_with_macos_options(
   service: &str,
   user: &str,
   target: Option<&str>,
-  store: &crate::options::MacosStore,
+  macos: &crate::options::MacosEntryOptions,
 ) -> Result<keyring_core::Entry> {
   use keyring_core::api::CredentialStoreApi;
 
   use crate::options::MacosStore;
 
-  match store {
+  match macos.store.as_ref().unwrap_or(&MacosStore::Keychain) {
     MacosStore::Keychain => {
+      if macos.access_policy.is_some() {
+        anyhow::bail!("access policy is only supported with the macOS protected store");
+      }
       let store =
         apple_native_keyring_store::keychain::Store::new_with_configuration(&HashMap::new())
           .map_err(anyhow::Error::from)?;
@@ -158,8 +165,12 @@ fn create_entry_with_macos_store(
       }
       let store =
         apple_native_keyring_store::protected::Store::new().map_err(anyhow::Error::from)?;
+      let modifiers = macos
+        .access_policy
+        .as_ref()
+        .map(|p| HashMap::from([("access-policy", p.as_modifier_value())]));
       store
-        .build(service, user, None)
+        .build(service, user, modifiers.as_ref())
         .map_err(anyhow::Error::from)
     }
   }

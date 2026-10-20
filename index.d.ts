@@ -259,6 +259,17 @@ export interface LinuxEntryOptions {
  */
 export type LinuxStore = 'secret-service' | 'keyutils'
 
+/**
+ * Accessibility of a credential in the macOS data-protection keychain,
+ * ordered from least to most restrictive.
+ *
+ * macOS only, and only supported with the `protected` store; ignored on
+ * other platforms. The `-this-device-only` variants additionally prevent
+ * the item from being migrated to another device (it still appears in
+ * encrypted backups, but cannot be restored onto different hardware).
+ */
+export type MacosAccessPolicy = 'after-first-unlock' | 'after-first-unlock-this-device-only' | 'when-unlocked' | 'when-unlocked-this-device-only' | 'when-passcode-set-this-device-only' | 'require-user-presence'
+
 /** macOS-only entry options; ignored on other platforms. */
 export interface MacosEntryOptions {
   /**
@@ -266,6 +277,16 @@ export interface MacosEntryOptions {
    * file-based keychain is used. There is no fallback between stores.
    */
   store?: MacosStore
+  /**
+   * Accessibility of credentials created by this entry (`kSecAttrAccessible`
+   * policies, plus the `require-user-presence` access-control policy). Only
+   * supported together with `store:
+   * "protected"`; the file-based keychain has no per-item accessibility, so
+   * combining this with the `keychain` store (explicitly or by leaving
+   * `store` absent) throws. When absent, the protected store uses the
+   * system default, `when-unlocked`.
+   */
+  accessPolicy?: MacosAccessPolicy
 }
 
 /**

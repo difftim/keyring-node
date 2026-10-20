@@ -708,4 +708,5 @@ module.exports.keytarFindCredentials = nativeBinding.keytarFindCredentials
 module.exports.keytarGetPassword = nativeBinding.keytarGetPassword
 module.exports.keytarSetPassword = nativeBinding.keytarSetPassword
 module.exports.LinuxStore = nativeBinding.LinuxStore
+module.exports.MacosAccessPolicy = nativeBinding.MacosAccessPolicy
 module.exports.MacosStore = nativeBinding.MacosStore

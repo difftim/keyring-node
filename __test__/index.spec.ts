@@ -296,6 +296,67 @@ if (platform === 'darwin') {
     t.true(await entry.deleteCredential(), 'clean up the pinned-store credential')
   })
 
+  test('macos access policy: protected store accepts an access policy', (t) => {
+    const entry = new Entry(testMacosProtectedService, testUser, {
+      macos: { store: 'protected', accessPolicy: 'after-first-unlock' },
+    })
+    try {
+      entry.setPassword(testPassword)
+    } catch (err) {
+      // The data-protection keychain requires the caller to be code-signed
+      // with an application identifier; plain node processes are not, and
+      // get `errSecMissingEntitlement` from the OS instead.
+      t.regex((err as Error).message, /entitlement/i, 'unentitled processes get the entitlement error')
+      return
+    }
+    t.is(entry.getPassword(), testPassword)
+    t.true(entry.deleteCredential(), 'clean up the pinned-store credential')
+  })
+
+  test('macos access policy: rejected with the keychain store', (t) => {
+    // The file-based keychain has no per-item kSecAttrAccessible notion, so
+    // an access policy there is rejected rather than silently ignored.
+    t.throws(
+      () =>
+        new Entry(testMacosProtectedService, testUser, {
+          macos: { store: 'keychain', accessPolicy: 'after-first-unlock' },
+        }),
+      { message: /access policy is only supported/ },
+    )
+    t.throws(
+      () =>
+        new AsyncEntry(testMacosProtectedService, testUser, {
+          macos: { store: 'keychain', accessPolicy: 'after-first-unlock' },
+        }),
+      { message: /access policy is only supported/ },
+    )
+  })
+
+  test('macos access policy: rejected without an explicit protected store', (t) => {
+    // Absent store means the default file-based keychain, where the policy
+    // has no effect; require the caller to opt into the protected store.
+    t.throws(() => new Entry(testMacosProtectedService, testUser, { macos: { accessPolicy: 'when-unlocked' } }), {
+      message: /access policy is only supported/,
+    })
+    t.throws(() => new AsyncEntry(testMacosProtectedService, testUser, { macos: { accessPolicy: 'when-unlocked' } }), {
+      message: /access policy is only supported/,
+    })
+    t.throws(
+      () =>
+        Entry.withTarget(testTarget!, testMacosProtectedService, testUser, {
+          macos: { accessPolicy: 'when-unlocked' },
+        }),
+      { message: /access policy is only supported/ },
+    )
+    t.throws(
+      () =>
+        AsyncEntry.withTarget(testTarget!, testMacosProtectedService, testUser, {
+          macos: { accessPolicy: 'when-unlocked' },
+        }),
+      { message: /access policy is only supported/ },
+    )
+  })
+
   test('macos store option: protected store rejects target', (t) => {
     // target maps to the file-based keychain's `keychain` modifier (a legacy
     // keychain file name), which has no meaning in the protected store, so it
@@ -310,6 +371,25 @@ if (platform === 'darwin') {
     )
   })
 } else {
+  test('macos access policy is accepted and ignored on non-macOS platforms', (t) => {
+    const entry = new Entry(testService, testUser, {
+      macos: { store: 'protected', accessPolicy: 'after-first-unlock' },
+    })
+    t.notThrows(() => entry.setPassword(testPassword))
+    t.is(entry.getPassword(), testPassword)
+    t.notThrows(() => entry.deleteCredential())
+  })
+
+  test('macos access policy without a store is accepted and ignored on non-macOS platforms', (t) => {
+    // On macOS this exact shape throws (the policy needs the protected
+    // store); on every other platform the whole macos bag is inert, so it
+    // must stay accepted-and-ignored rather than becoming a throw.
+    const entry = new Entry(testService, testUser, { macos: { accessPolicy: 'when-unlocked' } })
+    t.notThrows(() => entry.setPassword(testPassword))
+    t.is(entry.getPassword(), testPassword)
+    t.notThrows(() => entry.deleteCredential())
+  })
+
   test('macos store option is accepted and ignored on non-macOS platforms', (t) => {
     const entry = new Entry(testService, testUser, { macos: { store: 'protected' } })
     t.notThrows(() => entry.setPassword(testPassword))
@@ -324,6 +404,24 @@ if (platform === 'darwin') {
     await t.notThrowsAsync(() => entry.deleteCredential())
   })
 }
+
+test('macos access policy: unknown values are rejected', (t) => {
+  // napi-rs validates the string_enum at the JS boundary, before any
+  // platform-specific logic runs.
+  t.throws(
+    () => new Entry(testService, testUser, { macos: { store: 'protected', accessPolicy: 'made-up-policy' } } as any),
+    { message: /does not match any variant of enum/ },
+    'throws on a value outside the MacosAccessPolicy union',
+  )
+})
+
+test('macos access policy: value is constrained to the MacosAccessPolicy union at compile time', (t) => {
+  if (false) {
+    // @ts-expect-error 'made-up-policy' is not a member of the MacosAccessPolicy union
+    new Entry(testService, testUser, { macos: { store: 'protected', accessPolicy: 'made-up-policy' } })
+  }
+  t.pass()
+})
 
 test('macos store option: unknown store values are rejected', (t) => {
   // napi-rs validates the string_enum at the JS boundary, before any
