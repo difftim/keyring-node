@@ -126,9 +126,5 @@
   "funding": {
     "type": "github",
     "url": "https://github.com/sponsors/Brooooooklyn"
-  },
-  "optionalDependencies": {
-    "@difftim/keyring-darwin-arm64": "2.1.3",
-    "@difftim/keyring-darwin-x64": "2.1.3"
   }
 }

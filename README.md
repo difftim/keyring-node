@@ -146,6 +146,12 @@ cp keyring.darwin-x64.node npm/darwin-x64/
 # 4. publish — prepublishOnly publishes the two platform packages first,
 #    injects them as optionalDependencies, then publishes the main package
 npm publish
+
+# 5. discard the optionalDependencies prepublish injected into package.json.
+#    They belong only in the published tarball: committing them breaks
+#    `yarn install` in this repo, which would try to resolve the platform
+#    packages from the registry.
+git checkout -- package.json
 ```
 
 ## Installing from GitHub Packages
