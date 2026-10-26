@@ -137,8 +137,11 @@ leaving `store` absent) throws rather than silently ignoring the option.
 # Building and publishing (GitHub Packages)
 
 This fork is published as `@difftim/keyring` to GitHub Packages, built and released locally from a
-Mac. Only macOS binaries (arm64 + x64, as separate platform packages) are shipped for now; npm picks
-the right one at install time via the `os`/`cpu` fields on the `optionalDependencies`.
+Mac. Only a macOS binary is shipped for now, as a single `darwin-universal` platform package: an
+x64 + arm64 fat binary with no `cpu` filter, so it is installed on every Mac and the loader picks the
+slice matching the running process. See
+[Cross-architecture packaging](#cross-architecture-packaging-electron) for why it is not split into
+per-architecture packages.
 
 ## One-time setup
 
@@ -165,22 +168,24 @@ the right one at install time via the `os`/`cpu` fields on the `optionalDependen
 # 1. bump the version and commit
 npm version patch
 
-# 2. build both architectures (must use the rustup toolchain, not Homebrew rust)
+# 2. build both architectures and lipo them into keyring.darwin-universal.node
+#    (must use the rustup toolchain, not Homebrew rust)
 PATH="/opt/homebrew/opt/rustup/bin:$PATH" yarn build:darwin
 
-# 3. generate the per-platform package dirs and stage the binaries
+# 3. generate the platform package dir and stage the universal binary.
+#    mv, not cp: the loader tries ./keyring.darwin-universal.node first, so a
+#    copy left in the repo root would shadow every later `yarn build`.
 yarn napi create-npm-dirs
-cp keyring.darwin-arm64.node npm/darwin-arm64/
-cp keyring.darwin-x64.node npm/darwin-x64/
+mv keyring.darwin-universal.node npm/darwin-universal/
 
-# 4. publish — prepublishOnly publishes the two platform packages first,
-#    injects them as optionalDependencies, then publishes the main package
+# 4. publish — prepublishOnly publishes the universal platform package first,
+#    injects it as the only optionalDependency, then publishes the main package
 npm publish
 
 # 5. discard the optionalDependencies prepublish injected into package.json.
-#    They belong only in the published tarball: committing them breaks
+#    It belongs only in the published tarball: committing it breaks
 #    `yarn install` in this repo, which would try to resolve the platform
-#    packages from the registry.
+#    package from the registry.
 git checkout -- package.json
 ```
 
@@ -193,11 +198,39 @@ GitHub Packages requires authentication even for public packages. Consumers need
 //npm.pkg.github.com/:_authToken=<PAT with read:packages>
 ```
 
-Then `npm install @difftim/keyring` works on both Apple Silicon and Intel Macs.
+Then `npm install @difftim/keyring` works on both Apple Silicon and Intel Macs, and the resulting
+`node_modules` can be packaged for either architecture.
+
+## Cross-architecture packaging (Electron)
+
+The macOS binary is shipped as one `universal-apple-darwin` package rather than as `darwin-x64` and
+`darwin-arm64` packages, because per-architecture packages break Electron apps that are packaged for
+a different architecture than the machine they are built on.
+
+Platform packages are `optionalDependencies` whose `os`/`cpu` fields the package manager checks
+**at install time, against the machine running the install**. On an Apple Silicon machine only the
+arm64 package is installed; an Intel (x64) app packaged from that `node_modules` ships no x64 binary,
+and at runtime — under Rosetta or on a real Intel Mac, `process.arch` is `x64` either way — the
+loader fails with `Cannot find module '@difftim/keyring-darwin-x64'`. Unlike `node-gyp` or
+`prebuild-install` modules, NAPI-RS platform packages have no install script, so
+`electron-builder install-app-deps --arch x64` cannot swap the binary for the target architecture.
+A universal package has no `cpu` filter, is installed on every Mac, and contains both slices, so an
+app packaged for either architecture on either kind of machine loads the right one.
+
+Other NAPI-RS-style dependencies in an Electron app have the same problem. The package-manager-level
+fixes, for reference:
+
+- Yarn Berry: `supportedArchitectures: { os: [current, darwin], cpu: [current, x64, arm64] }` in
+  `.yarnrc.yml` (keep `current`, or installs on other hosts lose their own platform packages)
+- pnpm: `pnpm.supportedArchitectures` in `package.json`, same semantics
+- npm: `npm install --cpu=x64 --os=darwin` (one architecture per install)
+- Yarn 1 has no equivalent: `yarn install --ignore-platform` installs every platform package of
+  every dependency, or install and package each architecture on a machine (or CI runner) of that
+  architecture.
 
 ## Adding Linux / Windows later
 
-Add the targets back to `napi.targets` in `package.json` (e.g. `x86_64-unknown-linux-gnu`,
+Add the targets to `napi.targets` in `package.json` next to `universal-apple-darwin` (e.g. `x86_64-unknown-linux-gnu`,
 `x86_64-pc-windows-msvc`), build those binaries (CI or cross-compilation), stage them into
 `npm/<platform>/`, and publish a new version. `napi prepublish` refuses to publish while any
 declared target's binary is missing, so only declare targets you can actually ship.

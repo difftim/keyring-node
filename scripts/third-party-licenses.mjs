@@ -23,6 +23,11 @@ const FILE_NAME = 'LICENSE.third-party.md'
 const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 const { binaryName, targets } = packageJson.napi
 
+// A universal binary is lipo'd from these per-arch builds (`napi universalize`).
+// It is not a Rust target, so its license file is rendered from the per-arch
+// triples, which must agree on the crates they compile in.
+const UNIVERSAL_SOURCE_TRIPLES = { darwin: ['x86_64-apple-darwin', 'aarch64-apple-darwin'] }
+
 const run = (command, args) =>
   execFileSync(command, args, {
     cwd: root,
@@ -109,7 +114,7 @@ function vendoredLibdbusSection(triple, crates) {
   ].join('\n')
 }
 
-function render(triple, platformArchABI) {
+function render(triple, platformArchABI, tripleLabel) {
   const about = JSON.parse(
     run('cargo', ['about', 'generate', '--format', 'json', '--frozen', '--fail', '--target', triple]),
   )
@@ -134,7 +139,7 @@ function render(triple, platformArchABI) {
   const lines = [
     '# Third-party licenses',
     '',
-    `\`${binaryName}.${platformArchABI}.node\` (\`${triple}\`) is built from the Rust crates below, at the versions`,
+    `\`${binaryName}.${platformArchABI}.node\` (${tripleLabel}) is built from the Rust crates below, at the versions`,
     'pinned in [`Cargo.lock`](https://github.com/Brooooooklyn/keyring-node/blob/main/Cargo.lock). The list includes',
     'procedural-macro crates that only run at compile time. The binary embeds the same list, readable with',
     '`rust-audit-info` or `cargo audit bin`.',
@@ -166,12 +171,27 @@ function render(triple, platformArchABI) {
   return `${lines.join('\n').trimEnd()}\n`
 }
 
+function renderTarget(triple) {
+  const { platformArchABI, platform, arch } = parseTriple(triple)
+  if (arch !== 'universal') return render(triple, platformArchABI, `\`${triple}\``)
+  const sources = UNIVERSAL_SOURCE_TRIPLES[platform]
+  const label = `\`${triple}\`: ${sources.map((source) => `\`${source}\``).join(' + ')}`
+  const [content, ...rest] = sources.map((source) => render(source, platformArchABI, label))
+  const differing = sources.slice(1).filter((_, i) => rest[i] !== content)
+  if (differing.length) {
+    throw new Error(
+      `${triple}: crates or licenses differ between ${sources[0]} and ${differing.join(', ')}; a universal binary needs one license file that covers every slice`,
+    )
+  }
+  return content
+}
+
 const stale = []
 for (const triple of targets) {
   const { platformArchABI } = parseTriple(triple)
   const relativePath = `npm/${platformArchABI}/${FILE_NAME}`
   const file = join(root, relativePath)
-  const content = render(triple, platformArchABI)
+  const content = renderTarget(triple)
   if (check) {
     if (!existsSync(file) || readFileSync(file, 'utf8') !== content) stale.push(relativePath)
   } else {

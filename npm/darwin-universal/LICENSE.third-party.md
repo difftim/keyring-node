@@ -1,6 +1,6 @@
 # Third-party licenses
 
-`keyring.darwin-arm64.node` (`aarch64-apple-darwin`) is built from the Rust crates below, at the versions
+`keyring.darwin-universal.node` (`universal-apple-darwin`: `x86_64-apple-darwin` + `aarch64-apple-darwin`) is built from the Rust crates below, at the versions
 pinned in [`Cargo.lock`](https://github.com/Brooooooklyn/keyring-node/blob/main/Cargo.lock). The list includes
 procedural-macro crates that only run at compile time. The binary embeds the same list, readable with
 `rust-audit-info` or `cargo audit bin`.

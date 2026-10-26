@@ -50,8 +50,7 @@
     "binaryName": "keyring",
     "constEnum": false,
     "targets": [
-      "aarch64-apple-darwin",
-      "x86_64-apple-darwin"
+      "universal-apple-darwin"
     ]
   },
   "engines": {
@@ -64,7 +63,7 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
-    "build:darwin": "napi build --platform --release --target aarch64-apple-darwin && napi build --platform --release --target x86_64-apple-darwin",
+    "build:darwin": "napi build --platform --release --target aarch64-apple-darwin && napi build --platform --release --target x86_64-apple-darwin && napi universalize",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",
