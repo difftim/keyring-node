@@ -1,6 +1,6 @@
 {
   "name": "@difftim/keyring",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "https://github.com/hwchen/keyring-rs Node.js binding via https://napi.rs",
   "main": "index.js",
   "types": "index.d.ts",
